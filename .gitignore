@@ -501,3 +501,6 @@ build/lib/libgtest_main.a
 build/lib/libgtest.a
 .vscode/settings.json
 .vscode/tasks.json
+build/.cmake/api/v1/reply/cache-v2-1efd725ed76f8874a584.json
+build/.cmake/api/v1/reply/index-2025-05-10T21-24-30-0250.json
+build/.cmake/api/v1/reply/toolchains-v1-de13eb4a293a7f94668f.json

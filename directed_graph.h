@@ -131,6 +131,8 @@ public:
 
     // Алгоритм Дейкстры для поиска кратчайших путей
     ChainedHashTable<double> dijkstra(size_t origin) const;
+    // Алгоритм Беллмана — Форда для поиска кратчайших путей
+    ChainedHashTable<double> bellmanFord(size_t origin) const;
 
 private:
     // Структура ребра
