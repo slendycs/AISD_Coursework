@@ -1,0 +1,214 @@
+#include "directed_graph.h"
+#include "queue.hpp"
+#include <limits>
+
+bool DirectedGraph::isEmpty() const
+{
+    if (realSize_ == 0) return true;
+    return false;
+}
+
+bool DirectedGraph::searchNode(size_t key) const
+{
+    try
+    {
+        if (adjacencyList_.at(key) != nullptr)
+        {
+            return true;
+        }
+        else return false;
+    }
+    catch(const std::out_of_range)
+    {
+        return false;
+    }
+}
+
+bool DirectedGraph::hasVertex(size_t origin, size_t destination) const
+{
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
+    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+
+
+    // Получаем указатель на список ребер
+    LinkedList<Vertex>* originVertexes = adjacencyList_.at(origin);
+
+    // Ищем ребро в списке
+    for (size_t i = 0; i < originVertexes->getSize(); i++)
+    {
+        Vertex* temp = originVertexes->at(i);
+        if (temp->destination_ == destination) return true;
+    }
+
+    return false;
+}
+
+double DirectedGraph::removeVertex(size_t origin, size_t destination)
+{
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
+    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+
+    // Получаем указатель на список ребер
+    LinkedList<Vertex>* originVertexes = adjacencyList_.at(origin);
+
+    // Ищем ребро
+    Vertex* temp = searchVertex(origin, destination);
+    if (temp == nullptr) throw std::logic_error("Such a vertex does not exist");
+    double weight = temp->weight_;
+
+    // Удаляем ребро
+    originVertexes->deleteItem(*temp);
+    return weight;
+}
+
+ChainedHashTable<double> DirectedGraph::dijkstra(size_t origin) const
+{   
+    // Проверка на существование исходного узла
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node does not exist");
+    if (isOnlyPositiveVertexes() == false) throw std::logic_error("This graph contains vertexes with negative weights, which prevents Dijkstra's algorithm from running");
+
+    // Инициализация расстояний
+    ChainedHashTable<double> distances(size_); // таблица узлов и расстояний
+    QueueVector<size_t> processingQueue; // Очередь обхода узлов
+
+    // Установка начальных значений
+    for (size_t currentNode = 0; currentNode < size_; ++currentNode) 
+    {
+        if (searchNode(currentNode)) {
+            distances.insert(currentNode, std::numeric_limits<double>::infinity());
+        }
+    }
+    distances.insert(origin, 0.0);
+    processingQueue.enQueue(origin);
+
+    // Основной цикл обработки узлов
+    while (!processingQueue.isEmpty()) 
+    {
+        size_t currentNode = processingQueue.deQueue();
+
+        // Получение списка рёбер текущего узла
+        LinkedList<Vertex>* adjacentVertex = adjacencyList_.at(currentNode);
+        if (!adjacentVertex) continue;
+
+        // Обход всех смежных узлов
+        size_t edgesCount = adjacentVertex->getSize();
+        for (size_t edgeIndex = 0; edgeIndex < edgesCount; ++edgeIndex) 
+        {
+            Vertex* currentEdge = adjacentVertex->at(edgeIndex);
+            size_t neighborNode = currentEdge->destination_;
+            double vertexWeight = currentEdge->weight_;
+
+            // Вычисление нового расстояния
+            double newDistance = distances[currentNode] + vertexWeight;
+
+            // Обновление расстояния, если найден более короткий путь
+            if (newDistance < distances[neighborNode]) {
+                distances[neighborNode] = newDistance;
+                processingQueue.enQueue(neighborNode);
+            }
+        }
+    }
+    distances.deleteItem(origin);
+    return std::move(distances);
+}
+
+void DirectedGraph::insertNode(size_t key)
+{
+    // Проверяем наличие узла в графе
+    if (searchNode(key) == false)
+    {
+        // Проверяем, можно ли добавить новый узел
+        if (key >= size_)
+        {
+            size_ = key + 1;
+            adjacencyList_.resize(size_, nullptr);
+        }
+
+        // Добавляем узел
+        adjacencyList_.at(key) = new LinkedList<Vertex>;
+        realSize_++;
+    }
+    else throw std::runtime_error("This node already exists in the graph");
+}
+
+void DirectedGraph::removeNode(size_t key)
+{
+    // Проверяем наличие узла
+    if (searchNode(key) == false) throw std::invalid_argument("This node is not in the graph");
+
+    // Обходим весь список с узлами
+    for (size_t i = 0; i < size_; i++)
+    {   
+        // Получаем список рёбер
+        LinkedList<Vertex>* nodeVertexes = adjacencyList_.at(i);
+
+        // Удаляем узел
+        if (i == key)
+        {
+            if (nodeVertexes->getSize() != 0) nodeVertexes->clear();
+            adjacencyList_.at(i) = nullptr;
+            realSize_--;
+        }
+        
+        // Удаляем ребро от i-того узла до key
+        if ((adjacencyList_.at(i) != nullptr) && hasVertex(i, key))
+        {
+            removeVertex(i, key);
+        }
+    }
+}
+
+DirectedGraph::Vertex *DirectedGraph::searchVertex(size_t origin, size_t destination) const
+{
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
+    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+
+
+    // Получаем указатель на список ребер
+    LinkedList<Vertex>* originVertexes = adjacencyList_.at(origin);
+
+    // Ищем ребро в списке
+    for (size_t i = 0; i < originVertexes->getSize(); i++)
+    {
+        Vertex* temp = originVertexes->at(i);
+        if (temp->destination_ == destination) return temp;
+    }
+
+    return nullptr;
+}
+
+bool DirectedGraph::isOnlyPositiveVertexes() const
+{
+    for (const auto& node: adjacencyList_)
+    {
+        if (node == nullptr) continue;
+        for (size_t i = 0; i < node->getSize(); i++)
+        {
+            Vertex* temp = node->at(i);
+            if (temp->weight_ <= 0) return false;
+        }
+    }
+    return true;
+}
+
+void DirectedGraph::addVertex(size_t origin, double weight, size_t destination)
+{
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
+    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+
+
+    // Проверяем не является ли новое ребро обратным
+    if (hasVertex(destination, origin) == true) throw std::logic_error("There is already a vertex between these nodes");
+
+    // Если между двумя нодами уже есть ребро, обновляем вес
+    Vertex* temp = searchVertex(origin, destination);
+    if (temp != nullptr)
+    {
+        temp->weight_ = weight;
+        return;
+    }
+
+    // Если ребро ещё не встречалось, то добавляем его в список рёбер
+    LinkedList<Vertex>* originVertexes = adjacencyList_.at(origin);
+    originVertexes->pushBack(Vertex{weight, destination});
+}
