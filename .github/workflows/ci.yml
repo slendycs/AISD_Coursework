@@ -1,0 +1,32 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive  # Если используются подмодули для googletest
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+
+    - name: Configure project
+      run: |
+        cmake -B build -S .
+
+    - name: Build project and tests
+      run: |
+        cmake --build build --parallel $(nproc)
+
+    - name: Run all tests
+      run: |
+        cd build && ctest --output-on-failure
