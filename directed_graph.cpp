@@ -173,6 +173,81 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     return distances;
 }
 
+double DirectedGraph::wave(size_t origin, size_t destination) const
+{
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
+    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+
+    if (origin == destination) return 0.0;
+
+    QueueVector<size_t> queue;
+    ChainedHashTable<size_t> parents(size_);
+    ChainedHashTable<double> edgeWeights(size_);
+    ChainedHashTable<bool> visited(size_);
+
+    queue.enQueue(origin);
+    parents.insert(origin, std::numeric_limits<size_t>::max());
+    edgeWeights.insert(origin, 0.0);
+    visited.insert(origin, true);
+
+    bool found = false;
+
+    while (!queue.isEmpty()) 
+    {
+        size_t current = queue.deQueue();
+
+        if (current == destination) 
+        {
+            found = true;
+            break;
+        }
+
+        LinkedList<Vertex>* adjacent = adjacencyList_.at(current);
+        if (!adjacent) continue;
+
+        for (size_t i = 0; i < adjacent->getSize(); ++i) 
+        {
+            Vertex* edge = adjacent->at(i);
+            size_t neighbor = edge->destination_;
+
+            if (!visited[neighbor]) 
+            {
+                visited.insert(neighbor, true);
+                parents.insert(neighbor, current);
+                edgeWeights.insert(neighbor, edge->weight_);
+                queue.enQueue(neighbor);
+
+                if (neighbor == destination) 
+                {
+                    found = true;
+                }
+            }
+        }
+    }
+
+    if (!found) 
+    {
+        throw std::logic_error("No path exists between the nodes");
+    }
+
+    double totalWeight = 0.0;
+    size_t current = destination;
+
+    while (current != origin) 
+    {
+        size_t parent = parents[current];
+        totalWeight += edgeWeights[current];
+        current = parent;
+
+        if (parent == std::numeric_limits<size_t>::max()) 
+        {
+            throw std::logic_error("Invalid path detected");
+        }
+    }
+
+    return totalWeight;
+}
+
 void DirectedGraph::insertNode(size_t key)
 {
     // Проверяем наличие узла в графе

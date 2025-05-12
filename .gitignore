@@ -565,3 +565,10 @@ build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-popula
 build/_deps/googletest-subbuild/googletest-populate-prefix/src/googletest-populate-stamp/googletest-populate-gitinfo.txt
 build/_deps/googletest-subbuild/googletest-populate-prefix/tmp/googletest-populate-gitclone.cmake
 build/_deps/googletest-subbuild/googletest-populate-prefix/tmp/googletest-populate-gitupdate.cmake
+build/.cmake/api/v1/reply/cache-v2-0db9020ee6941efec490.json
+build/.cmake/api/v1/reply/cmakeFiles-v1-cbe472954579d60e1e52.json
+build/.cmake/api/v1/reply/codemodel-v2-fd9a6b6429703c8fa5b0.json
+build/.cmake/api/v1/reply/index-2025-05-12T18-37-49-0173.json
+build/.cmake/api/v1/reply/target-gmock_main-Debug-2203002162e1866ccee2.json
+build/Testing/20250512-1837/Test.xml
+build/Testing/Temporary/LastTest_20250512-1837.log

@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef DIRECTEDGRAPH_H
+#define DIRECTEDGRAPH_H
 
 #include "linked_list.hpp"
 #include "hash_table.hpp"
@@ -133,6 +133,8 @@ public:
     ChainedHashTable<double> dijkstra(size_t origin) const;
     // Алгоритм Беллмана — Форда для поиска кратчайших путей
     ChainedHashTable<double> bellmanFord(size_t origin) const;
+    // Волновой алгоритм для поиска кратчайшего пути между заданной парой вершин
+    double wave(size_t origin, size_t destination) const;    
 
 private:
     // Структура ребра
