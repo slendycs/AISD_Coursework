@@ -175,77 +175,59 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
 
 double DirectedGraph::wave(size_t origin, size_t destination) const
 {
-    if (searchNode(origin) == false) throw std::invalid_argument("Origin node is not in the graph"); // Проверяем наличие узла источника
-    if (searchNode(destination) == false) throw std::invalid_argument("Destination node is not in the graph"); // Проверяем наличие узла назначения
+    // Проверка на наличие узлов в графе
+    if (!searchNode(origin)) throw std::invalid_argument("Origin node is not in the graph");
+    if (!searchNode(destination)) throw std::invalid_argument("Destination node is not in the graph");
 
     if (origin == destination) return 0.0;
 
+    // Очередь для обхода графа в ширину
     QueueVector<size_t> queue;
-    ChainedHashTable<size_t> parents(size_);
-    ChainedHashTable<double> edgeWeights(size_);
+
+    // Таблица для отслеживания посещённых узлов
     ChainedHashTable<bool> visited(size_);
 
-    queue.enQueue(origin);
-    parents.insert(origin, std::numeric_limits<size_t>::max());
-    edgeWeights.insert(origin, 0.0);
-    visited.insert(origin, true);
+    // Таблица расстояний от начального узла до остальных
+    ChainedHashTable<size_t> distance(size_);
 
-    bool found = false;
+    // Инициализация начальной вершины
+    queue.enQueue(origin);             // Добавляем стартовую вершину в очередь
+    visited.insert(origin, true);      // Отмечаем её как посещённую
+    distance.insert(origin, 0);        // Расстояние до неё — ноль
 
-    while (!queue.isEmpty()) 
+    // Основной цикл обхода графа
+    while (!queue.isEmpty())
     {
-        size_t current = queue.deQueue();
+        size_t current = queue.deQueue(); // Извлекаем текущий узел
 
-        if (current == destination) 
+        // Если достигли целевого узла — возвращаем длину кратчайшего пути
+        if (current == destination)
         {
-            found = true;
-            break;
+            return static_cast<double>(distance[current]);
         }
 
-        LinkedList<Vertex>* adjacent = adjacencyList_.at(current);
-        if (!adjacent) continue;
+        // Получаем список всех соседей текущего узла
+        LinkedList<Vertex>* neighbors = adjacencyList_.at(current);
+        if (!neighbors) continue;
 
-        for (size_t i = 0; i < adjacent->getSize(); ++i) 
+        // Перебираем всех соседей
+        for (size_t i = 0; i < neighbors->getSize(); ++i)
         {
-            Vertex* edge = adjacent->at(i);
+            Vertex* edge = neighbors->at(i);
             size_t neighbor = edge->destination_;
 
-            if (!visited[neighbor]) 
+            // Если сосед ещё не посещён
+            if (!visited[neighbor])
             {
-                visited.insert(neighbor, true);
-                parents.insert(neighbor, current);
-                edgeWeights.insert(neighbor, edge->weight_);
-                queue.enQueue(neighbor);
-
-                if (neighbor == destination) 
-                {
-                    found = true;
-                }
+                visited.insert(neighbor, true);                      // Отмечаем его как посещённого
+                distance.insert(neighbor, distance[current] + 1);   // Устанавливаем расстояние
+                queue.enQueue(neighbor);                            // Добавляем в очередь на обработку
             }
         }
     }
 
-    if (!found) 
-    {
-        throw std::logic_error("No path exists between the nodes");
-    }
-
-    double totalWeight = 0.0;
-    size_t current = destination;
-
-    while (current != origin) 
-    {
-        size_t parent = parents[current];
-        totalWeight += edgeWeights[current];
-        current = parent;
-
-        if (parent == std::numeric_limits<size_t>::max()) 
-        {
-            throw std::logic_error("Invalid path detected");
-        }
-    }
-
-    return totalWeight;
+    // Если очередь опустела, а узел не достигнут — пути нет
+    throw std::logic_error("No path exists between the nodes");
 }
 
 void DirectedGraph::insertNode(size_t key)
