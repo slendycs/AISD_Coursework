@@ -1,7 +1,7 @@
 #include "../directed_graph.h"
 #include "../hash_table.hpp"
 #include "../build/_deps/googletest-src/googletest/include/gtest/gtest.h"
-#include "sstream"
+#include <sstream>
 
 // Базовый тест корректности путей
 TEST(DijkstraTest, BasicShortestPaths) 
