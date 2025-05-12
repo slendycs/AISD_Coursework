@@ -63,9 +63,8 @@ double DirectedGraph::removeVertex(size_t origin, size_t destination)
 
 ChainedHashTable<double> DirectedGraph::dijkstra(size_t origin) const
 {   
-    // Проверка на существование исходного узла
-    if (searchNode(origin) == false) throw std::invalid_argument("Origin node does not exist");
-    if (isOnlyPositiveVertexes() == false) throw std::logic_error("This graph contains vertexes with negative weights, which prevents Dijkstra's algorithm from running");
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node does not exist"); // Проверка на существование исходного узла
+    if (isOnlyPositiveVertexes() == false) throw std::logic_error("This graph contains vertexes with negative weights, which prevents Dijkstra's algorithm from running"); // Проверка что все рёюра положительные
 
     // Инициализация расстояний
     ChainedHashTable<double> distances(size_); // таблица узлов и расстояний
@@ -110,6 +109,68 @@ ChainedHashTable<double> DirectedGraph::dijkstra(size_t origin) const
     }
     distances.deleteItem(origin);
     return std::move(distances);
+}
+
+ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
+{   
+    // Проверка на существование исходного узла
+    if (searchNode(origin) == false) throw std::invalid_argument("Origin node does not exist"); 
+
+    // Сбор всех рёбер графа
+    std::vector<std::tuple<size_t, size_t, double>> edges;
+    for (size_t u = 0; u < adjacencyList_.size(); ++u) 
+    {
+        if (adjacencyList_[u] != nullptr) 
+        {
+            for (size_t i = 0; i < adjacencyList_[u]->getSize(); ++i) 
+            {
+                Vertex* vertex = adjacencyList_[u]->at(i);
+                edges.emplace_back(u, vertex->destination_, vertex->weight_);
+            }
+        }
+    }
+
+    // Инициализация расстояний
+    ChainedHashTable<double> distances(size_);
+    for (size_t node = 0; node < size_; ++node) 
+    {
+        if (searchNode(node)) 
+        {
+            distances.insert(node, std::numeric_limits<double>::infinity());
+        }
+    }
+    distances.insert(origin, 0.0);
+
+    // Релаксация рёбер (n-1 итераций)
+    for (size_t i = 1; i < realSize_; ++i) 
+    {
+        for (const auto& edge : edges) 
+        {
+            size_t u = std::get<0>(edge);
+            size_t v = std::get<1>(edge);
+            double weight = std::get<2>(edge);
+
+            if (distances[u] != std::numeric_limits<double>::infinity() && distances[u] + weight < distances[v]) 
+            {
+                distances[v] = distances[u] + weight;
+            }
+        }
+    }
+
+    // Проверка на отрицательные циклы
+    for (const auto& edge : edges) 
+    {
+        size_t u = std::get<0>(edge);
+        size_t v = std::get<1>(edge);
+        double weight = std::get<2>(edge);
+        if (distances[u] != std::numeric_limits<double>::infinity() && distances[u] + weight < distances[v]) 
+        {
+            throw std::logic_error("Graph contains a negative-weight cycle");
+        }
+    }
+
+    distances.deleteItem(origin);
+    return distances;
 }
 
 void DirectedGraph::insertNode(size_t key)
