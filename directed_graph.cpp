@@ -173,6 +173,63 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     return distances;
 }
 
+double DirectedGraph::wave(size_t origin, size_t destination) const
+{
+    // Проверка на наличие узлов в графе
+    if (!searchNode(origin)) throw std::invalid_argument("Origin node is not in the graph");
+    if (!searchNode(destination)) throw std::invalid_argument("Destination node is not in the graph");
+
+    if (origin == destination) return 0.0;
+
+    // Очередь для обхода графа в ширину
+    QueueVector<size_t> queue;
+
+    // Таблица для отслеживания посещённых узлов
+    ChainedHashTable<bool> visited(size_);
+
+    // Таблица расстояний от начального узла до остальных
+    ChainedHashTable<size_t> distance(size_);
+
+    // Инициализация начальной вершины
+    queue.enQueue(origin);             // Добавляем стартовую вершину в очередь
+    visited.insert(origin, true);      // Отмечаем её как посещённую
+    distance.insert(origin, 0);        // Расстояние до неё — ноль
+
+    // Основной цикл обхода графа
+    while (!queue.isEmpty())
+    {
+        size_t current = queue.deQueue(); // Извлекаем текущий узел
+
+        // Если достигли целевого узла — возвращаем длину кратчайшего пути
+        if (current == destination)
+        {
+            return static_cast<double>(distance[current]);
+        }
+
+        // Получаем список всех соседей текущего узла
+        LinkedList<Vertex>* neighbors = adjacencyList_.at(current);
+        if (!neighbors) continue;
+
+        // Перебираем всех соседей
+        for (size_t i = 0; i < neighbors->getSize(); ++i)
+        {
+            Vertex* edge = neighbors->at(i);
+            size_t neighbor = edge->destination_;
+
+            // Если сосед ещё не посещён
+            if (!visited[neighbor])
+            {
+                visited.insert(neighbor, true);                      // Отмечаем его как посещённого
+                distance.insert(neighbor, distance[current] + 1);   // Устанавливаем расстояние
+                queue.enQueue(neighbor);                            // Добавляем в очередь на обработку
+            }
+        }
+    }
+
+    // Если очередь опустела, а узел не достигнут — пути нет
+    throw std::logic_error("No path exists between the nodes");
+}
+
 void DirectedGraph::insertNode(size_t key)
 {
     // Проверяем наличие узла в графе

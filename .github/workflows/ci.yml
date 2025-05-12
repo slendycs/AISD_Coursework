@@ -10,9 +10,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        #submodules: recursive  # Если используются подмодули для googletest
+      uses: actions/checkout@v3  # Убрали submodules: recursive
 
     - name: Install dependencies
       run: |
