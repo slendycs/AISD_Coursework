@@ -73,7 +73,6 @@ public:
     bool isEmpty() const; // Проверяет наличие узлов в списке 
     bool searchItem(const T &_val) const; // Прверяет наличие элемента в списке
     void pushBack(const T & _val); // Добавление узла в конец списка
-    void print(std::ostream& out) const; // Вывод элементов списка в поток
     void clear(); // Очистка списка
     void deleteItem(const T&_val); // Удаление элемента из словаря
     size_t getSize(); // Получение количества элементов в списке
@@ -160,20 +159,6 @@ void LinkedList<T>::pushBack(const T &_val)
     tail = newNode;
 }
 
-
-template <class T>
-void LinkedList<T>::print(std::ostream &out) const
-{
-    if (isEmpty() == true) throw std::logic_error("Linked List is empty!");
-
-    Node* current = head;
-
-    while (current)
-    {
-        out << current->val << " ";
-        current = current->next;
-    }
-}
 
 template <class T>
 void LinkedList<T>::clear()
