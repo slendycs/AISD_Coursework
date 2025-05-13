@@ -4,8 +4,11 @@
 
 bool DirectedGraph::isEmpty() const
 {
-    if (realSize_ == 0) return true;
-    return false;
+    for (const auto& list : adjacencyList_)
+    {
+        if (list != nullptr) return false;
+    }
+    return true;
 }
 
 bool DirectedGraph::searchNode(size_t key) const
