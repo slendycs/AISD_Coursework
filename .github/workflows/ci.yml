@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Testing on pull request
 
 on:
   pull_request:
@@ -7,10 +7,9 @@ on:
 jobs:
   preparing:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # Убрали submodules: recursive
+      uses: actions/checkout@v3
 
     - name: Install dependencies
       run: |
@@ -22,6 +21,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Важно: повторить checkout в каждом job, где нужен код
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Configure project
       run: |
         cmake -B build -S .
@@ -35,6 +38,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
     - name: Run all tests
       run: |
         cd build && ctest --output-on-failure
