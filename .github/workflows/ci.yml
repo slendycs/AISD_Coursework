@@ -19,7 +19,7 @@ jobs:
   
   build:
     needs: preparing
-    runs-on: buntu-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Configure project
