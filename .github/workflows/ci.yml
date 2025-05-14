@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Важно: повторить checkout в каждом job, где нужен код
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -33,14 +32,24 @@ jobs:
       run: |
         cmake --build build --parallel $(nproc)
 
+    # Сохраняем папку build как артефакт
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/
+
   testing:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build-artifacts
+        path: build/  # Распаковываем артефакт в папку build
 
     - name: Run all tests
       run: |
-        cd  && ctest --output-on-failure
+        cd build && ctest --output-on-failure
