@@ -177,7 +177,7 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     return distances;
 }
 
-double DirectedGraph::wave(size_t origin, size_t destination) const
+size_t DirectedGraph::wave(size_t origin, size_t destination) const
 {
     // Проверка на наличие узлов в графе
     if (!searchNode(origin)) throw std::invalid_argument("Origin node is not in the graph");
@@ -187,10 +187,8 @@ double DirectedGraph::wave(size_t origin, size_t destination) const
 
     // Очередь для обхода графа в ширину
     QueueVector<size_t> queue;
-
     // Таблица для отслеживания посещённых узлов
     ChainedHashTable<bool> visited(size_);
-
     // Таблица расстояний от начального узла до остальных
     ChainedHashTable<size_t> distance(size_);
 
@@ -207,7 +205,7 @@ double DirectedGraph::wave(size_t origin, size_t destination) const
         // Если достигли целевого узла — возвращаем длину кратчайшего пути
         if (current == destination)
         {
-            return static_cast<double>(distance[current]);
+            return distance[current];
         }
 
         // Получаем список всех соседей текущего узла
