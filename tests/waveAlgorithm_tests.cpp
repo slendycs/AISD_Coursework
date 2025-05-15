@@ -17,7 +17,7 @@ TEST(WaveTest, BasicWaveShortestPath)
     graph.addVertex(1, 1.0, 3);
 
     // Кратчайший путь от 0 до 3 по числу рёбер: 0 -> 1 -> 3 или 0 -> 2 -> 1 -> 3
-    EXPECT_DOUBLE_EQ(graph.wave(0, 3), 2.0);
+    EXPECT_EQ(graph.wave(0, 3), 2);
 }
 
 // Тест: путь до самого себя
@@ -26,7 +26,7 @@ TEST(WaveTest, SelfPath)
     DirectedGraph graph;
     graph.insertNode(0);
 
-    EXPECT_DOUBLE_EQ(graph.wave(0, 0), 0.0);
+    EXPECT_EQ(graph.wave(0, 0), 0);
 }
 
 // Тест: отсутствие пути
@@ -65,7 +65,7 @@ TEST(WaveTest, DirectedEdgesMatter)
 
     // Нет пути из 0 в 1, но есть из 1 в 0
     EXPECT_THROW(graph.wave(0, 1), std::logic_error);
-    EXPECT_DOUBLE_EQ(graph.wave(1, 0), 1.0);
+    EXPECT_EQ(graph.wave(1, 0), 1);
 }
 
 // Тест: сложная топология с несколькими путями
@@ -84,7 +84,7 @@ TEST(WaveTest, MultiplePathsShortestSelected)
     graph.addVertex(2, 1.0, 3);
     graph.addVertex(3, 1.0, 4);
 
-    EXPECT_DOUBLE_EQ(graph.wave(0, 4), 2.0);
+    EXPECT_EQ(graph.wave(0, 4), 2);
 }
 
 // Тест: проверка выброса исключения при несуществующих узлах

@@ -93,18 +93,19 @@ ChainedHashTable<double> DirectedGraph::dijkstra(size_t origin) const
         if (!adjacentVertex) continue;
 
         // Обход всех смежных узлов
-        size_t edgesCount = adjacentVertex->getSize();
-        for (size_t edgeIndex = 0; edgeIndex < edgesCount; ++edgeIndex) 
+        size_t vertexesCount = adjacentVertex->getSize();
+        for (size_t vertexIndex = 0; vertexIndex < vertexesCount; ++vertexIndex) 
         {
-            Vertex* currentEdge = adjacentVertex->at(edgeIndex);
-            size_t neighborNode = currentEdge->destination_;
-            double vertexWeight = currentEdge->weight_;
+            Vertex* currentVertex = adjacentVertex->at(vertexIndex);
+            size_t neighborNode = currentVertex->destination_;
+            double vertexWeight = currentVertex->weight_;
 
             // Вычисление нового расстояния
             double newDistance = distances[currentNode] + vertexWeight;
 
             // Обновление расстояния, если найден более короткий путь
-            if (newDistance < distances[neighborNode]) {
+            if (newDistance < distances[neighborNode]) 
+            {
                 distances[neighborNode] = newDistance;
                 processingQueue.enQueue(neighborNode);
             }
@@ -120,15 +121,15 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     if (searchNode(origin) == false) throw std::invalid_argument("Origin node does not exist"); 
 
     // Сбор всех рёбер графа
-    std::vector<std::tuple<size_t, size_t, double>> edges;
-    for (size_t u = 0; u < adjacencyList_.size(); ++u) 
+    std::vector<std::tuple<size_t, size_t, double>> vertexes;
+    for (size_t key = 0; key < adjacencyList_.size(); ++key) 
     {
-        if (adjacencyList_[u] != nullptr) 
+        if (adjacencyList_[key] != nullptr) 
         {
-            for (size_t i = 0; i < adjacencyList_[u]->getSize(); ++i) 
+            for (size_t vertexNumber = 0; vertexNumber < adjacencyList_[key]->getSize(); ++vertexNumber) 
             {
-                Vertex* vertex = adjacencyList_[u]->at(i);
-                edges.emplace_back(u, vertex->destination_, vertex->weight_);
+                Vertex* vertex = adjacencyList_[key]->at(vertexNumber);
+                vertexes.emplace_back(key, vertex->destination_, vertex->weight_);
             }
         }
     }
@@ -147,26 +148,26 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     // Релаксация рёбер (n-1 итераций)
     for (size_t i = 1; i < realSize_; ++i) 
     {
-        for (const auto& edge : edges) 
+        for (const auto& vertex : vertexes) 
         {
-            size_t u = std::get<0>(edge);
-            size_t v = std::get<1>(edge);
-            double weight = std::get<2>(edge);
+            size_t start = std::get<0>(vertex);
+            size_t destination = std::get<1>(vertex);
+            double weight = std::get<2>(vertex);
 
-            if (distances[u] != std::numeric_limits<double>::infinity() && distances[u] + weight < distances[v]) 
+            if ((distances[start] != std::numeric_limits<double>::infinity()) && (distances[start] + weight < distances[destination])) 
             {
-                distances[v] = distances[u] + weight;
+                distances[destination] = distances[start] + weight;
             }
         }
     }
 
     // Проверка на отрицательные циклы
-    for (const auto& edge : edges) 
+    for (const auto& vertex : vertexes) 
     {
-        size_t u = std::get<0>(edge);
-        size_t v = std::get<1>(edge);
-        double weight = std::get<2>(edge);
-        if (distances[u] != std::numeric_limits<double>::infinity() && distances[u] + weight < distances[v]) 
+        size_t start = std::get<0>(vertex);
+        size_t destination = std::get<1>(vertex);
+        double weight = std::get<2>(vertex);
+        if (distances[start] != std::numeric_limits<double>::infinity() && distances[start] + weight < distances[destination]) 
         {
             throw std::logic_error("Graph contains a negative-weight cycle");
         }
@@ -176,7 +177,7 @@ ChainedHashTable<double> DirectedGraph::bellmanFord(size_t origin) const
     return distances;
 }
 
-double DirectedGraph::wave(size_t origin, size_t destination) const
+size_t DirectedGraph::wave(size_t origin, size_t destination) const
 {
     // Проверка на наличие узлов в графе
     if (!searchNode(origin)) throw std::invalid_argument("Origin node is not in the graph");
@@ -186,10 +187,8 @@ double DirectedGraph::wave(size_t origin, size_t destination) const
 
     // Очередь для обхода графа в ширину
     QueueVector<size_t> queue;
-
     // Таблица для отслеживания посещённых узлов
     ChainedHashTable<bool> visited(size_);
-
     // Таблица расстояний от начального узла до остальных
     ChainedHashTable<size_t> distance(size_);
 
@@ -206,7 +205,7 @@ double DirectedGraph::wave(size_t origin, size_t destination) const
         // Если достигли целевого узла — возвращаем длину кратчайшего пути
         if (current == destination)
         {
-            return static_cast<double>(distance[current]);
+            return distance[current];
         }
 
         // Получаем список всех соседей текущего узла
@@ -216,8 +215,8 @@ double DirectedGraph::wave(size_t origin, size_t destination) const
         // Перебираем всех соседей
         for (size_t i = 0; i < neighbors->getSize(); ++i)
         {
-            Vertex* edge = neighbors->at(i);
-            size_t neighbor = edge->destination_;
+            Vertex* vertex = neighbors->at(i);
+            size_t neighbor = vertex->destination_;
 
             // Если сосед ещё не посещён
             if (!visited[neighbor])

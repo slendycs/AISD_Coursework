@@ -134,7 +134,7 @@ public:
     // Алгоритм Беллмана — Форда для поиска кратчайших путей
     ChainedHashTable<double> bellmanFord(size_t origin) const;
     // Волновой алгоритм для поиска кратчайшего пути между заданной парой вершин
-    double wave(size_t origin, size_t destination) const;    
+    size_t wave(size_t origin, size_t destination) const;    
 
 private:
     // Структура ребра
